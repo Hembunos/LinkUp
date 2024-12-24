@@ -1,1 +1,1 @@
-# linkUp
+# linkUp - chat application
