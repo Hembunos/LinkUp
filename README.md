@@ -1,1 +1,1 @@
-# linkUp - chat application
+# linkUp - chat application - nextjs
