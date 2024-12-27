@@ -1,6 +1,7 @@
 import Image from "next/image";
-import React, { useActionState, useState } from "react";
+import React, { useActionState, useEffect, useState } from "react";
 import { FcCamera } from "react-icons/fc";
+import ContextMenu from "./ContextMenu";
 
 function Avatar({ type, image, setImage }) {
   const [hover, setHover] = useState(false);
@@ -10,12 +11,49 @@ function Avatar({ type, image, setImage }) {
     y: 0,
   });
 
+  const [grabPhoto, setGrabPhoto] = useState(false);
+
+  useEffect(() => {
+    if (grabPhoto) {
+      const data = document.getElementById("photo-picker");
+      data.click();
+      document.body.onfocus = (e) => {
+        setGrabPhoto(false);
+      };
+    }
+  }, [grabPhoto]);
+
+  
+  const contextMenuOptions = [
+    {
+      name: "Take Photo",
+      callback: () => {},
+    },
+    {
+      name: "Choose From Library",
+      callback: () => {},
+    },
+    {
+      name: "Upload Photo",
+      callback: () => {
+        setGrabPhoto(true);
+      },
+    },
+    {
+      name: "Remove Photo",
+      callback: () => {
+        setImage("/default_avatar.png");
+      },
+    },
+  ];
+
   const showContextMenu = (e) => {
     e.preventDefault();
     setIsContextMenuVisible({ x: e.pageX, y: e.pageY });
     setContextMenuCordinates(true);
   };
 
+  const photoPickerChange = () => {};
 
   return (
     <>
@@ -28,7 +66,7 @@ function Avatar({ type, image, setImage }) {
 
         {type === "lg" && (
           <div className="relative h-14 w-14 cursor-pointer">
-            <Image src={image} alt="avatar" className="rounded-full" />
+            <Image src={image} alt="avatar" className="rounded-full" fill />
           </div>
         )}
 
@@ -36,7 +74,7 @@ function Avatar({ type, image, setImage }) {
           <div
             className="relative z-0 cursor-pointer"
             onMouseEnter={() => setHover(true)}
-            onmouseleave={() => setHover(false)}
+            onMouseLeave={() => setHover(false)}
           >
             <div
               className={`z-10 bg-photopicker-overlay-background h-60 w-60 absolute top-0 left-0 flex items-center rounded-full justify-center flex-col text-center gap-2 ${
@@ -50,16 +88,25 @@ function Avatar({ type, image, setImage }) {
                 id="context-opener"
                 onClick={(e) => showContextMenu(e)}
               />
-              <Span onClick={(e) => showContextMenu(e)} id="context-opener">
+              <span onClick={(e) => showContextMenu(e)} id="context-opener">
                 Change <br /> Profile <br /> photo
-              </Span>
+              </span>
             </div>
             <div className="flex items-center justify-center h-60 w-60">
               <Image src={image} alt="avatar" className="rounded-full" fill />
             </div>
           </div>
         )}
-      </div>
+      </div>{" "}
+      {isContextMenuVisible && (
+        <ContextMenu
+          options={contextMenuOptions}
+          cordinates={contextMenuCordinates}
+          contextMenu={isContextMenuVisible}
+          setContextMenu={setIsContextMenuVisible}
+        />
+      )}
+      {grabPhoto && <PhotoPicker onChange={photoPickerChange} />}
     </>
   );
 }
