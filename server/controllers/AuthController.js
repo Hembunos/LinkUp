@@ -1,7 +1,7 @@
 import getPrismaInstance from "../utils/PrismaClient.js";
 
 export const checkUser = async (req, res, next) => {
-  
+
   try {
     const { email } = req.body;
 
@@ -22,3 +22,25 @@ export const checkUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const onBoardUser = async (req, res, next) => {
+  try {
+
+    const { email, name, about, image: profilePicture } = req.body;
+    if (!email || !name || !profilePicture) {
+      return res.send("Email, Name and Images are required");
+    }
+
+    const prisma = getPrismaInstance();
+    await prisma.user.create({
+      data: { email, name, about, profilePicture },
+    });
+
+    return res.json({ msg: "Success", status: true });
+
+
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+}

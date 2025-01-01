@@ -2,6 +2,8 @@ import Image from "next/image";
 import React, { useActionState, useEffect, useState } from "react";
 import { FcCamera } from "react-icons/fc";
 import ContextMenu from "./ContextMenu";
+import PhotoLibrary from "./PhotoLibrary";
+import CapturePhoto from "./CapturePhoto";
 
 function Avatar({ type, image, setImage }) {
   const [hover, setHover] = useState(false);
@@ -11,6 +13,8 @@ function Avatar({ type, image, setImage }) {
     y: 0,
   });
 
+  const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
+  const [showCapturePhoto, setShowCapturePhoto] = useState(false);
   const [grabPhoto, setGrabPhoto] = useState(false);
 
   useEffect(() => {
@@ -18,20 +22,25 @@ function Avatar({ type, image, setImage }) {
       const data = document.getElementById("photo-picker");
       data.click();
       document.body.onfocus = (e) => {
-        setGrabPhoto(false);
+        setTimeout(() => {
+          setGrabPhoto(false);
+        }, 1000);
       };
     }
   }, [grabPhoto]);
 
-  
   const contextMenuOptions = [
     {
       name: "Take Photo",
-      callback: () => {},
+      callback: () => {
+        setShowCapturePhoto(true);
+      },
     },
     {
       name: "Choose From Library",
-      callback: () => {},
+      callback: () => {
+        setShowPhotoLibrary(true);
+      },
     },
     {
       name: "Upload Photo",
@@ -53,7 +62,20 @@ function Avatar({ type, image, setImage }) {
     setContextMenuCordinates(true);
   };
 
-  const photoPickerChange = () => {};
+  const photoPickerChange = () => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    const data = document.createElement("img");
+    reader.onload = function (event) {
+      data.src = event.target.result;
+      data.setAttribute("data-src", event.target.result);
+    };
+
+    reader.readAsDataURL(file);
+    setTimeout(() => {
+      setImage(data.src);
+    }, 100);
+  };
 
   return (
     <>
@@ -104,6 +126,18 @@ function Avatar({ type, image, setImage }) {
           cordinates={contextMenuCordinates}
           contextMenu={isContextMenuVisible}
           setContextMenu={setIsContextMenuVisible}
+        />
+      )}
+      {showCapturePhoto && (
+        <CapturePhoto
+          setImage={setImage}
+          hide={setShowCapturePhoto}
+        />
+      )}
+      {showPhotoLibrary && (
+        <PhotoLibrary
+          setImage={setImage}
+          hidePhotoLibrary={setShowPhotoLibrary}
         />
       )}
       {grabPhoto && <PhotoPicker onChange={photoPickerChange} />}
